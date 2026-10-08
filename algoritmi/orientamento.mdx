@@ -70,7 +70,7 @@ Il quality gate **non svuota più i risultati** se nel pool esistono percorsi co
 - Il prompt AI chiarisce che `docenti` è una **tipologia di percorso**, non un’aspirazione a insegnare.
 - In **crescita professionale**, il ruolo attuale guida retrieval e ranking se manca il ruolo desiderato (es. `Artista` → arte/creatività/cultura).
 - Varianti I/II anno dello stesso percorso vengono **deduplicate** (`getPathFamilyKey`).
-- Re-rank AI di default su **gpt-4o** (override con `OPENAI_MODEL`), pool 20 candidati.
+- Re-rank AI di default su **gpt-5.6-terra** a sforzo `low` (override con `OPENAI_MODEL`), pool 20 candidati.
 
 ### Prezzo e agevolazioni
 
@@ -95,7 +95,7 @@ Se l’utente seleziona una o più fasce (escl. “Nessuna di queste”), il pre
 
 ---
 
-*Versione 1.6 — Settembre 2026 — Uso interno riservato*
+*Versione 1.7 — Ottobre 2026 — Uso interno riservato*
 
 I valori quiz (`obiettivo`, `livello`, professioni `matchText`, agevolazioni) vivono nel contratto
 `trovaLaureaQuiz.ts` (admin + frontend, da tenere allineati).
