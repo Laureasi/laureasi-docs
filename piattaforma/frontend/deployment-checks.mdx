@@ -41,6 +41,10 @@ In GitHub possono comparire come `Deploy Preview / Lint · Typecheck · Test / �
 
 Push su `develop` e PR `develop → main` condividono la concurrency `deploy-preview-develop`: resta una sola run effettiva.
 
+## Indicizzazione
+
+Solo `www.laureasi.it` e `laureasi.it` sono indicizzabili. Su ogni altro host, incluso `develop.laureasi.it`, la risposta porta `X-Robots-Tag: noindex`. `robots.txt` resta quello di produzione: il crawler legge il noindex sull'header e non indicizza l'host.
+
 ## E2E smoke (Playwright)
 
 Dopo ogni deploy, il job **`E2E smoke`** esegue 6 test browser contro il dominio pubblico dell'ambiente:
