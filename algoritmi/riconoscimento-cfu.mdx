@@ -24,7 +24,7 @@ Ricevi un’email di sintesi con i corsi del report e il bottone **Apri la tua s
 ## Wizard
 
 1. **Documento** — carica il riconoscimento crediti oppure scarica il modello, compilalo e ricaricalo. L’upload è opzionale: puoi aprire la tabella vuota e inserire gli esami a mano.
-2. **Revisione** — tabella nome, SSD, CFU. Almeno una riga completa per continuare. Se il parse ha letto ateneo, classe MUR o corso, li vedi in chip **sola lettura** sopra la tabella.
+2. **Revisione** — tabella nome, SSD, CFU. Nome e CFU sono obbligatori, l’SSD no. Almeno una riga completa per continuare. Se il parse ha letto ateneo, classe MUR o corso, li vedi in chip **sola lettura** sopra la tabella.
 3. **Contatti** — nome, email, telefono, privacy. Poi parte il calcolo.
 
 ## Documento
@@ -79,15 +79,25 @@ Nel pool degli affini ci sono solo atenei **partner**. Sul sito non si sceglie u
 
 ## Regole di matching
 
-Il motore parte dal **piano di destinazione**, non dal libretto.
+Regole `cfu-sim-v2`. Il motore parte dal **piano di destinazione**, non dal libretto.
 
-1. Normalizza l’SSD al codice MUR (ignora suffissi di ateneo; i compositi matchano su un pezzo).
-2. Stesso SSD: convalida piena se i CFU di provenienza coprono la destinazione o lo scarto è **al massimo 3 CFU**. Oltre, **da integrare**.
-3. Ogni riga del libretto si usa **una sola volta**.
-4. Prova finale, tirocinio e “altre conoscenze” non si auto-convalidano.
-5. Insegnamento a scelta: si copre con un esame avanzo, senza SSD, stessa regola CFU.
+1. Normalizza l’SSD al codice MUR: ignora i suffissi di ateneo, scioglie i codici compatti (`SECSP08`, `SECS07`) e i compositi matchano su un pezzo. I codici della riforma 2024 (`GIUR-05/A`) diventano i settori storici: la tabella viene dalle coppie viste nei piani a catalogo e nelle prevalutazioni, e un gruppo che accorpa più settori li copre tutti (`GIUR-05/A` → `IUS/08` e `IUS/09`).
+2. Abbinamento in tre passate, ogni riga del libretto si usa **una sola volta**:
+   1. **Nome simile** (Dice sui token del nome, almeno 0,5) con SSD compatibile. Le materie senza SSD (idoneità, laboratori, `NN`) si coprono solo così.
+   2. **Stesso SSD**, con i CFU più vicini.
+   3. **Insegnamenti a scelta** (“a scelta”, “libera”, “opzionale”): un esame avanzato con un SSD qualsiasi. Vengono per ultimi, così non tolgono esami alle materie con SSD.
+3. CFU: convalida piena se i CFU di provenienza coprono la destinazione o lo scarto è **al massimo 3 CFU**. Oltre, **da integrare**.
+4. Prova finale, tirocinio e “altre conoscenze” non si convalidano e non coprono nulla.
+5. Un esame trascritto due volte (“X – CONVALIDATO DA X”) conta una volta.
+6. **Magistrali**: se il documento è di una laurea triennale (`L-xx`, `L/SNT`, classi del DM 509), i suoi esami sono il titolo d’accesso e non si convalidano. La pagina risultato lo spiega e suggerisce di caricare l’eventuale documento con esami in più, corsi singoli o un’altra carriera.
 
-La classe MUR di provenienza resta contesto per il tutor. Non filtra il tipo e non è un moltiplicatore percentuale.
+L’SSD degli esami è facoltativo: un esame senza settore copre solo una materia senza SSD dal nome simile, mai un insegnamento a scelta.
+
+<Note>
+  Sulle letture del collaudo (101 casi con prevalutazione) le regole v2 portano lo scarto medio dagli orientatori da 13,9 a 10,8 CFU e la tendenza da +4,6 a +1,4. Sulle magistrali la tendenza scende da +19,6 a +4,5 e i casi entro 6 CFU passano dal 35% al 52%.
+</Note>
+
+La classe MUR di provenienza resta contesto per il tutor e decide la regola delle magistrali. Non filtra il tipo e non è un moltiplicatore percentuale.
 
 ## Anno di iscrizione
 
