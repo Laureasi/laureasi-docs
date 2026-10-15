@@ -45,7 +45,25 @@ Quando si aggiunge un sistema di IA, o si cambia in modo sostanziale un prompt, 
   Il ramo **visione** (scansioni e fotografie) è meno affidabile del ramo testo: su documenti scansionati può introdurre esami o CFU non presenti. È una ragione in più per cui il passo di revisione manuale non va rimosso.
 </Warning>
 
-## 3. Contenuti descrittivi delle schede
+## 3. Stima di settore e CFU degli esami (Simulatore CFU)
+
+| | |
+| --- | --- |
+| **ID** | `ssd_prediction` |
+| **Dove** | `laureasi-admin/src/lib/cfuRecognition/predictSsdLlm.ts` |
+| **Finalità** | Propone il settore scientifico-disciplinare (SSD) degli esami letti dal libretto che il documento non riporta, a partire dal nome dell'esame e dall'ateneo. Stima anche i CFU quando il documento non li riporta. Ciascuna stima parte solo se il dato manca per almeno metà degli esami. |
+| **Fornitore / modello** | OpenAI Ireland Ltd. — `gpt-6.1-sol`, sforzo `low` (override: `OPENAI_CFU_SSD_MODEL`) |
+| **Dati trasmessi** | Solo i nomi degli esami senza SSD e, se letti, ateneo, corso e classe di provenienza. Nessun dato di contatto né anagrafico. |
+| **Classificazione** | Trasparenza (art. 50). Non Allegato III, per le stesse ragioni della lettura del libretto. |
+| **Disclosure** | Etichette **SSD stimato: ricontrollalo** (**poco sicuro** se la confidenza non è alta) e **CFU stimati: ricontrollali** su ogni valore proposto, avviso sopra la tabella degli esami e sulla pagina risultato. |
+| **Presidio umano** | L'utente vede quali settori sono stimati e li corregge prima della stima: toccare il settore toglie la marcatura. Il lead registra quali esami avevano ancora SSD o CFU stimati (`exams[].ssdPredicted`, `exams[].cfuEstimated`) e la provenienza in `ssdAi`. Un esame con CFU stimati convalida per intero la materia abbinata. |
+| **Degradazione** | Se il modello non risponde entro 30 secondi o il budget è esaurito, gli esami restano senza SSD e l'utente li completa a mano. |
+
+<Note>
+  Prova del 14 ottobre 2026 su 829 esami reali con SSD stampato: con `gpt-6.1-sol` settore esatto nell'86-87% dei casi (94% su quelli a confidenza alta), area giusta nel 95%. Fra i modelli disponibili solo `gpt-6-astra` arriva alla stessa precisione, a circa cinque volte il costo; `gpt-5.6-sol`, `gpt-6-sol` e `gpt-5.5` restano 0,5-2 punti sotto, Terra e Luna 3-5 punti sotto, e lo sforzo `medium` non migliora. Rifacendo le simulazioni con gli SSD stimati al posto di quelli veri, la vicinanza alle prevalutazioni degli orientatori resta la stessa, ma il singolo caso può spostarsi fino a 15 CFU: per questo la stima resta marcata. Sul collaudo completo, stimare anche gli esami senza SSD dei documenti che gli SSD li stampano peggiorava 13 casi su 48: da qui la soglia della metà degli esami. Stima dei CFU (15 ottobre 2026): su 783 esami con CFU noti la stima è esatta nel 45% dei casi ed entro 3 CFU nel 90%; sui 15 casi del benchmark senza CFU, con la convalida piena degli esami stimati, 10 risultano vicini agli orientatori.
+</Note>
+
+## 4. Contenuti descrittivi delle schede
 
 | | |
 | --- | --- |
@@ -58,7 +76,7 @@ Quando si aggiunge un sistema di IA, o si cambia in modo sostanziale un prompt, 
 | **Disclosure** | Nota in calce al testo sulla scheda e attributo `data-ai-generated="true"` nel markup. |
 | **Presidio umano** | Contenuti modificabili dalla redazione nel CMS. I dati oggettivi (costi, durata, sedi, riconoscimento ministeriale) non provengono dal modello. |
 
-## 4. Arricchimento del catalogo (crawler)
+## 5. Arricchimento del catalogo (crawler)
 
 | | |
 | --- | --- |

@@ -24,7 +24,7 @@ Ricevi un’email di sintesi con i corsi del report e il bottone **Apri la tua s
 ## Wizard
 
 1. **Documento** — carica il riconoscimento crediti oppure scarica il modello, compilalo e ricaricalo. L’upload è opzionale: puoi aprire la tabella vuota e inserire gli esami a mano.
-2. **Revisione** — tabella nome, SSD, CFU. Almeno una riga completa per continuare. Se il parse ha letto ateneo, classe MUR o corso, li vedi in chip **sola lettura** sopra la tabella.
+2. **Revisione** — tabella nome, SSD, CFU. Nome e CFU sono obbligatori, l’SSD no. Almeno una riga completa per continuare. Se il parse ha letto ateneo, classe MUR o corso, li vedi in chip **sola lettura** sopra la tabella.
 3. **Contatti** — nome, email, telefono, privacy. Poi parte il calcolo.
 
 ## Documento
@@ -40,7 +40,9 @@ Testo in pagina:
 
 Il modello è un PDF Laureasi compilabile (Preview o Acrobat). In intestazione trovi **Ateneo di provenienza**, **Classe MUR** e **Corso di laurea**. Segue la tabella esami: **Nome insegnamento**, **CFU**, **SSD**.
 
-Formati ammessi: PDF, JPG, PNG. Peso massimo **10 MB**. Un PDF può avere al massimo **8 pagine**. Un file alla volta: un nuovo upload sostituisce il precedente. Formato, peso o pagine fuori limite restano un errore in pagina, senza invio.
+Formati ammessi: PDF, JPG, PNG. Peso massimo **10 MB**. Un PDF può avere al massimo **40 pagine**: fino a 8 il modello le legge in una sola chiamata, oltre a blocchi di 8 in parallelo. Le pagine vengono ridotte a 2000 px sul lato lungo prima della lettura, come le foto JPG e PNG. Un file alla volta: un nuovo upload sostituisce il precedente. Formato, peso o pagine fuori limite restano un errore in pagina, senza invio.
+
+Gli esami letti senza SSD non si scartano. Se il documento non stampa l'SSD per almeno metà degli esami, un secondo modello (`gpt-6.1-sol`) stima il settore dal nome dell'esame e dall'ateneo. Sui documenti che gli SSD li stampano la stima non parte: lì un esame senza settore di solito non ce l'ha davvero (idoneità di lingua, laboratori, abilità informatiche), e stimarlo spostava la simulazione lontano da quella degli orientatori. Il settore stimato compare nella tabella con l'etichetta **SSD stimato: ricontrollalo** (**poco sicuro** se la confidenza non è alta) e un avviso sopra la tabella; se l'utente cambia il settore, l'etichetta sparisce. I CFU non si stimano mai. Le voci con l'SSD ma senza CFU restano nell'elenco delle voci omesse; se però nessuna riga del documento è completa (certificati con solo nome, voto e data) vanno in tabella da completare. Gli esami simulati con l'SSD ancora stimato restano marcati sul lead e la pagina risultato lo ricorda. Allo stesso modo, se il documento non riporta i CFU per almeno metà degli esami (vecchio ordinamento, certificati con solo voto e data), lo stesso modello li stima dal nome; in tabella compaiono con l’etichetta **CFU stimati: ricontrollali**, e cambiarli toglie l’etichetta. Nel motore un esame con CFU stimati convalida per intero la materia a cui è abbinato, come fanno gli orientatori con gli esami senza crediti: una stima bassa altrimenti lascerebbe la materia da integrare. Sui 15 casi del benchmark senza CFU, prima tutti senza risultato, 10 risultano vicini agli orientatori.
 
 Se il parse non legge esami (o il servizio non risponde), vedi: «Non siamo riusciti a leggere il documento. Inserisci gli esami a mano.» La tabella resta vuota e puoi completarla tu. Il file resta in memoria e si allega al calcolo.
 
@@ -71,28 +73,42 @@ Sotto, il box **Un’altra ipotesi** ha solo **Richiedi una consulenza gratuita*
 
 ## Destinazioni ammesse
 
-Solo lauree (triennale, magistrale, ciclo unico) con piano di studi e **almeno il 75% delle materie curriculari con SSD**. Prova finale, tirocinio e placeholder (`NN`) non entrano nel conteggio. Sotto soglia la laurea non entra nel confronto.
+Solo lauree (triennale, magistrale, ciclo unico) con piano di studi e **almeno il 75% delle materie curriculari con SSD**. Prova finale, tirocinio, placeholder (`NN`) e insegnamenti a scelta non entrano nel conteggio. Sotto soglia la laurea non entra nel confronto.
+
+Il tipo di laurea è quello del CMS, con una protezione: le classi a ciclo unico (LMG/01, LM-13, LM-41, LM-42, LM-46, LM-85 bis, LM-4 c.u.) e le magistrali da 5 anni sono sempre trattate come **ciclo unico**, per l’anno di iscrizione e per la regola delle magistrali. In CMS una laurea con una di quelle classi non si salva se la tipologia non è “Ciclo unico”. Nella ricerca aperta le **magistrali** si propongono solo se dal documento risulta una laurea: magistrale biennale, ciclo unico concluso (almeno 270 CFU) o triennale con almeno 180 CFU; con classe di provenienza sconosciuta la ricerca resta su tutti i tipi.
 
 Nel pool degli affini ci sono solo atenei **partner**. Sul sito non si sceglie un corso nel wizard: il confronto parte da tutti i partner.
 
 ## Regole di matching
 
-Il motore parte dal **piano di destinazione**, non dal libretto.
+Regole `cfu-sim-v3`. Il motore parte dal **piano di destinazione**, non dal libretto.
 
-1. Normalizza l’SSD al codice MUR (ignora suffissi di ateneo; i compositi matchano su un pezzo).
-2. Stesso SSD: convalida piena se i CFU di provenienza coprono la destinazione o lo scarto è **al massimo 3 CFU**. Oltre, **da integrare**.
-3. Ogni riga del libretto si usa **una sola volta**.
-4. Prova finale, tirocinio e “altre conoscenze” non si auto-convalidano.
-5. Insegnamento a scelta: si copre con un esame avanzo, senza SSD, stessa regola CFU.
+1. Normalizza l’SSD al codice MUR: ignora i suffissi di ateneo, scioglie i codici compatti (`SECSP08`, `SECS07`) e i prefissi scritti senza la lettera dell’area quando sono univoci (`LIN/12` → `L-LIN/12`, `PSI/01` → `M-PSI/01`); i compositi matchano su un pezzo. I codici della riforma 2024 (`GIUR-05/A`) diventano i settori storici: la tabella viene dalle coppie viste nei piani a catalogo e nelle prevalutazioni, e un gruppo che accorpa più settori li copre tutti (`GIUR-05/A` → `IUS/08` e `IUS/09`).
+2. Abbinamento in tre passate, ogni riga del libretto si usa **una sola volta**:
+   1. **Nome simile** (Dice sui token del nome, almeno 0,5) con SSD compatibile. Fra più candidati vince quello che copre i CFU della materia, poi il nome più simile. Le materie senza SSD (idoneità, laboratori, `NN`) si coprono solo così.
+   2. **Stesso SSD**, con i CFU più vicini.
+   3. **Insegnamenti a scelta** (“a scelta”, “libera”, “opzionale”): un esame avanzato con un SSD qualsiasi, di almeno 4 CFU, che copra i CFU della materia (con la tolleranza di 3). Un a scelta non resta mai “da integrare”: se l’esame è più corto resta da sostenere, come fanno gli orientatori. Vengono per ultimi, così non tolgono esami alle materie con SSD.
+3. CFU: convalida piena se i CFU di provenienza coprono la destinazione o lo scarto è **al massimo 3 CFU**. Oltre, **da integrare**.
+4. Prova finale, tirocinio e “altre conoscenze” non si convalidano e non coprono nulla.
+5. Un esame trascritto due volte (“X – CONVALIDATO DA X”) conta una volta.
+6. **Magistrali**: se il documento è di una laurea triennale (`L-xx`, `L/SNT`, classi del DM 509), i suoi esami sono il titolo d’accesso e non si convalidano. La pagina risultato lo spiega e suggerisce di caricare l’eventuale documento con esami in più, corsi singoli o un’altra carriera.
 
-La classe MUR di provenienza resta contesto per il tutor. Non filtra il tipo e non è un moltiplicatore percentuale.
+L’SSD degli esami è facoltativo: un esame senza settore copre solo una materia senza SSD dal nome simile, mai un insegnamento a scelta.
+
+<Note>
+  Sulle letture del collaudo (101 casi con prevalutazione) le regole v2 portano lo scarto medio dagli orientatori da 13,9 a 10,8 CFU e la tendenza da +4,6 a +1,4. Sulle magistrali la tendenza scende da +19,6 a +4,5 e i casi entro 6 CFU passano dal 35% al 52%.
+
+  Le regole v3 vengono da un'ottimizzazione sul catalogo di prod del 14 ottobre 2026, con 93 casi valutabili divisi fra casi di ottimizzazione e casi di verifica. Successo (entro 9 CFU dagli orientatori e anno giusto): 55,9% → 60,2% sul totale, invariato al 58,6% sui casi di verifica. Gran parte dell'errore che resta viene dalla scelta del curriculum: gli orientatori valutano quello scelto dallo studente, il motore quello con più CFU.
+</Note>
+
+La classe MUR di provenienza resta contesto per il tutor e decide la regola delle magistrali. Non filtra il tipo e non è un moltiplicatore percentuale.
 
 ## Anno di iscrizione
 
 Default per tipo (invariati):
 
 - Triennale: ≥90 CFU → 3°; ≥30 → 2°; altrimenti 1°
-- Magistrale: ≥40 → 2°; altrimenti 1°
+- Magistrale: ≥30 → 2°; altrimenti 1°
 - Ciclo unico: `1 + floor(CFU / 30)`, tetto alla durata CMS (default 5)
 
 In **Dettagli corso** puoi sovrascrivere le soglie con i campi opzionali `cfu_soglia_anno_2` … `cfu_soglia_anno_5`. Si usano solo gli anni entro la durata del corso. Valore assente o `≤ 0`: resta il default per tipo. Un campo compilato sostituisce solo quell’anno; gli altri restano al default. Non si interpolano i buchi.
