@@ -79,13 +79,13 @@ Nel pool degli affini ci sono solo atenei **partner**. Sul sito non si sceglie u
 
 ## Regole di matching
 
-Regole `cfu-sim-v2`. Il motore parte dal **piano di destinazione**, non dal libretto.
+Regole `cfu-sim-v3`. Il motore parte dal **piano di destinazione**, non dal libretto.
 
-1. Normalizza l’SSD al codice MUR: ignora i suffissi di ateneo, scioglie i codici compatti (`SECSP08`, `SECS07`) e i compositi matchano su un pezzo. I codici della riforma 2024 (`GIUR-05/A`) diventano i settori storici: la tabella viene dalle coppie viste nei piani a catalogo e nelle prevalutazioni, e un gruppo che accorpa più settori li copre tutti (`GIUR-05/A` → `IUS/08` e `IUS/09`).
+1. Normalizza l’SSD al codice MUR: ignora i suffissi di ateneo, scioglie i codici compatti (`SECSP08`, `SECS07`) e i prefissi scritti senza la lettera dell’area quando sono univoci (`LIN/12` → `L-LIN/12`, `PSI/01` → `M-PSI/01`); i compositi matchano su un pezzo. I codici della riforma 2024 (`GIUR-05/A`) diventano i settori storici: la tabella viene dalle coppie viste nei piani a catalogo e nelle prevalutazioni, e un gruppo che accorpa più settori li copre tutti (`GIUR-05/A` → `IUS/08` e `IUS/09`).
 2. Abbinamento in tre passate, ogni riga del libretto si usa **una sola volta**:
-   1. **Nome simile** (Dice sui token del nome, almeno 0,5) con SSD compatibile. Le materie senza SSD (idoneità, laboratori, `NN`) si coprono solo così.
+   1. **Nome simile** (Dice sui token del nome, almeno 0,5) con SSD compatibile. Fra più candidati vince quello che copre i CFU della materia, poi il nome più simile. Le materie senza SSD (idoneità, laboratori, `NN`) si coprono solo così.
    2. **Stesso SSD**, con i CFU più vicini.
-   3. **Insegnamenti a scelta** (“a scelta”, “libera”, “opzionale”): un esame avanzato con un SSD qualsiasi. Vengono per ultimi, così non tolgono esami alle materie con SSD.
+   3. **Insegnamenti a scelta** (“a scelta”, “libera”, “opzionale”): un esame avanzato con un SSD qualsiasi, di almeno 4 CFU, che copra i CFU della materia (con la tolleranza di 3). Un a scelta non resta mai “da integrare”: se l’esame è più corto resta da sostenere, come fanno gli orientatori. Vengono per ultimi, così non tolgono esami alle materie con SSD.
 3. CFU: convalida piena se i CFU di provenienza coprono la destinazione o lo scarto è **al massimo 3 CFU**. Oltre, **da integrare**.
 4. Prova finale, tirocinio e “altre conoscenze” non si convalidano e non coprono nulla.
 5. Un esame trascritto due volte (“X – CONVALIDATO DA X”) conta una volta.
@@ -95,6 +95,8 @@ L’SSD degli esami è facoltativo: un esame senza settore copre solo una materi
 
 <Note>
   Sulle letture del collaudo (101 casi con prevalutazione) le regole v2 portano lo scarto medio dagli orientatori da 13,9 a 10,8 CFU e la tendenza da +4,6 a +1,4. Sulle magistrali la tendenza scende da +19,6 a +4,5 e i casi entro 6 CFU passano dal 35% al 52%.
+
+  Le regole v3 vengono da un'ottimizzazione sul catalogo di prod del 14 ottobre 2026, con 93 casi valutabili divisi fra casi di ottimizzazione e casi di verifica. Successo (entro 9 CFU dagli orientatori e anno giusto): 55,9% → 60,2% sul totale, invariato al 58,6% sui casi di verifica. Gran parte dell'errore che resta viene dalla scelta del curriculum: gli orientatori valutano quello scelto dallo studente, il motore quello con più CFU.
 </Note>
 
 La classe MUR di provenienza resta contesto per il tutor e decide la regola delle magistrali. Non filtra il tipo e non è un moltiplicatore percentuale.
@@ -104,7 +106,7 @@ La classe MUR di provenienza resta contesto per il tutor e decide la regola dell
 Default per tipo (invariati):
 
 - Triennale: ≥90 CFU → 3°; ≥30 → 2°; altrimenti 1°
-- Magistrale: ≥40 → 2°; altrimenti 1°
+- Magistrale: ≥30 → 2°; altrimenti 1°
 - Ciclo unico: `1 + floor(CFU / 30)`, tetto alla durata CMS (default 5)
 
 In **Dettagli corso** puoi sovrascrivere le soglie con i campi opzionali `cfu_soglia_anno_2` … `cfu_soglia_anno_5`. Si usano solo gli anni entro la durata del corso. Valore assente o `≤ 0`: resta il default per tipo. Un campo compilato sostituisce solo quell’anno; gli altri restano al default. Non si interpolano i buchi.
