@@ -50,16 +50,18 @@ In CMS il documento finisce su **Libretto PDF**, visibile solo agli editor.
 
 ## Come si costruisce il report
 
-Score di un corso: `recognizedCfu / planCfu` (CFU riconosciuti sul totale del piano). Il 100% è lecito. Niente geografia.
+Score di un corso mostrato: `recognizedCfu / planCfu` (CFU riconosciuti sul totale del piano). Il 100% è lecito. Niente geografia.
 
-Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di tipo o ambito. Master e corsi brevi restano fuori. Il motore `cfu-sim-v1` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
+L’**ordine** dei corsi proposti usa invece l’affinità di disciplina: i CFU convalidati sulle sole materie con un settore (senza insegnamenti a scelta e idoneità, che con pochi esami danno gli stessi CFU su quasi tutti i corsi) più una spinta ai corsi vicini alla provenienza (stessa area dei corsi della classe del documento; senza classe, esami con settori della stessa famiglia del piano). Con “completare” vince chi lascia meno CFU da fare, calcolati allo stesso modo. Sul collaudo il corso valutato dall’orientatore compare fra i primi tre nel 34% dei casi con “completare” e nel 41% con “nuovo”, contro il 10% e il 22% di prima. I CFU e lo score mostrati restano quelli veri.
+
+Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea. Master e corsi brevi restano fuori. Il motore `cfu-sim-v1` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
 
 Due rami:
 
 | Ingresso | Cosa simuli |
 | --- | --- |
 | Hai scelto un corso (`degreeId`) | Sempre quel corso (anche non partner). Poi fino a **2 affini** partner: stessa area CMS, stesso tipo di laurea (affini usano il tipo CMS; un ciclo unico non prende affini triennali, e viceversa), score **strettamente maggiore**. Se nessuno batte la scelta, una sola scheda. |
-| Nessun corso scelto | Tutti i partner, ogni tipo. Poi i **top 3** per copertura. La classe MUR del documento non filtra il tipo. |
+| Nessun corso scelto | Tutti i partner (magistrali solo con una laurea). Poi i **top 3** per affinità. Con “completare” i corsi della classe del documento vengono prima, poi gli altri fino a tre. |
 
 Sotto l’hero del **corso attivo** (il #1, oppure il corso scelto via `degreeId`) trovi le altre righe, sotto **I percorsi più compatibili con i tuoi esami**. Un clic su un’altra riga la rende attiva: le colonne e il piano si ricalcolano dallo snapshot, senza un secondo calcolo. Due accordion, chiusi all’avvio: **Esami convalidabili** e **Esami non convalidabili**.
 
