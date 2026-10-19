@@ -54,14 +54,14 @@ Score di un corso mostrato: `recognizedCfu / planCfu` (CFU riconosciuti sul tota
 
 L’**ordine** dei corsi proposti usa invece l’affinità di disciplina: i CFU convalidati sulle sole materie con un settore (senza insegnamenti a scelta e idoneità, che con pochi esami danno gli stessi CFU su quasi tutti i corsi) più una spinta ai corsi vicini alla provenienza (stessa area dei corsi della classe del documento; senza classe, esami con settori della stessa famiglia del piano). Con “completare” vince chi lascia meno CFU da fare, calcolati allo stesso modo. Sul collaudo il corso valutato dall’orientatore compare fra i primi tre nel 34% dei casi con “completare” e nel 41% con “nuovo”, contro il 10% e il 22% di prima. I CFU e lo score mostrati restano quelli veri.
 
-Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea. Master e corsi brevi restano fuori. Il motore `cfu-sim-v1` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
+Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea. Restano fuori i corsi della stessa classe di un titolo che il documento certifica come già conseguito: gli atenei non rilasciano un secondo titolo nella stessa classe, e un fascicolo con una LM-56 faceva proporre per prima un’altra LM-56 costruita sugli esami di quella laurea. La lettura del documento elenca le classi dei titoli conseguiti (anche più d’uno; non master, perfezionamenti, specializzazioni né carriere in corso o interrotte) e quelle del DM 509 si portano alle corrispondenti del DM 270 (31 → L-14, 22/S → LMG/01, 64/S → LM-56); una classe senza corrispondenza certa non esclude nulla. Con un corso scelto dall’utente non si esclude niente. Master e corsi brevi restano fuori. Il motore `cfu-sim-v1` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
 
 Due rami:
 
 | Ingresso | Cosa simuli |
 | --- | --- |
 | Hai scelto un corso (`degreeId`) | Sempre quel corso (anche non partner). Poi fino a **2 affini** partner: stessa area CMS, stesso tipo di laurea (affini usano il tipo CMS; un ciclo unico non prende affini triennali, e viceversa), score **strettamente maggiore**. Se nessuno batte la scelta, una sola scheda. |
-| Nessun corso scelto | Tutti i partner (magistrali solo con una laurea). Poi i **top 3** per affinità. Con “completare” i corsi della classe del documento vengono prima, poi gli altri fino a tre. |
+| Nessun corso scelto | Tutti i partner (magistrali solo con una laurea), esclusi i corsi della classe di un titolo già conseguito. Poi i **top 3** per affinità. Con “completare” i corsi della classe del documento vengono prima, poi gli altri fino a tre. |
 
 Sotto l’hero del **corso attivo** (il #1, oppure il corso scelto via `degreeId`) trovi le altre righe, sotto **I percorsi più compatibili con i tuoi esami**. Un clic su un’altra riga la rende attiva: le colonne e il piano si ricalcolano dallo snapshot, senza un secondo calcolo. Due accordion, chiusi all’avvio: **Esami convalidabili** e **Esami non convalidabili**.
 
@@ -83,7 +83,7 @@ Nel pool degli affini ci sono solo atenei **partner**. Sul sito non si sceglie u
 
 ## Regole di matching
 
-Regole `cfu-sim-v3`. Il motore parte dal **piano di destinazione**, non dal libretto.
+Regole `cfu-sim-v4`. Il motore parte dal **piano di destinazione**, non dal libretto.
 
 1. Normalizza l’SSD al codice MUR: ignora i suffissi di ateneo, scioglie i codici compatti (`SECSP08`, `SECS07`) e i prefissi scritti senza la lettera dell’area quando sono univoci (`LIN/12` → `L-LIN/12`, `PSI/01` → `M-PSI/01`); i compositi matchano su un pezzo. I codici della riforma 2024 (`GIUR-05/A`) diventano i settori storici: la tabella viene dalle coppie viste nei piani a catalogo e nelle prevalutazioni, e un gruppo che accorpa più settori li copre tutti (`GIUR-05/A` → `IUS/08` e `IUS/09`).
 2. Abbinamento in tre passate, ogni riga del libretto si usa **una sola volta**:
@@ -91,6 +91,7 @@ Regole `cfu-sim-v3`. Il motore parte dal **piano di destinazione**, non dal libr
    2. **Stesso SSD**, con i CFU più vicini.
    3. **Insegnamenti a scelta** (“a scelta”, “libera”, “opzionale”): un esame avanzato con un SSD qualsiasi, di almeno 4 CFU, che copra i CFU della materia (con la tolleranza di 3). Un a scelta non resta mai “da integrare”: se l’esame è più corto resta da sostenere, come fanno gli orientatori. Vengono per ultimi, così non tolgono esami alle materie con SSD.
 3. CFU: convalida piena se i CFU di provenienza coprono la destinazione o lo scarto è **al massimo 3 CFU**. Oltre, **da integrare**.
+   Un esame con meno del **15%** dei CFU della materia non la copre, nemmeno in parte: un modulo da 1 CFU non integra un esame da 13, che resta da sostenere come nelle prevalutazioni. Gli esami con CFU stimati fanno eccezione.
 4. Prova finale, tirocinio e “altre conoscenze” non si convalidano e non coprono nulla.
 5. Un esame trascritto due volte (“X – CONVALIDATO DA X”) conta una volta.
 6. **Magistrali**: se il documento è di una laurea triennale (`L-xx`, `L/SNT`, classi del DM 509), i suoi esami sono il titolo d’accesso e non si convalidano. La pagina risultato lo spiega e suggerisce di caricare l’eventuale documento con esami in più, corsi singoli o un’altra carriera.
