@@ -63,6 +63,8 @@ Sulle schede percorso il form porta anche `entity_id` e `university_id`, così A
 
 Il payload include i dati del lead (nome, email, telefono, provincia, fonte, UTM, metadati) e, per il quiz, le informazioni collegate al risultato.
 
+Il lead porta anche i consensi: `privacy_accepted`, `consent_marketing`, `consent_health`, `consent_version` e `consent_at` (per il quiz anche in `quiz.contact`). Copia `consent_marketing` sul contatto Aurora: chi lo ha a `false` non va inserito in campagne promozionali.
+
 n8n inoltra il contatto anche ad **Aurora CRM**. Non copiare gli id del CMS nei campi `ateneo` e `corso` del contatto: sono cataloghi diversi. Per la provincia, n8n scrive sul contatto Aurora il campo `provincia` con la **sigla** (`FI`, `RM`), non l'id CMS.
 
 ### Id nel payload
