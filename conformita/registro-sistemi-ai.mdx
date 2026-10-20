@@ -34,7 +34,7 @@ Quando si aggiunge un sistema di IA, o si cambia in modo sostanziale un prompt, 
 | --- | --- |
 | **ID** | `libretto_parse` |
 | **Dove** | `laureasi-admin/src/lib/cfuRecognition/completeLibrettoLlm.ts` |
-| **Finalità** | Estrae dal documento caricato l'elenco degli esami (nome, CFU, SSD), l'ateneo di provenienza e le classi dei titoli già conseguiti, che servono solo a non riproporre un corso della stessa classe. |
+| **Finalità** | Estrae dal documento caricato l'elenco degli esami (nome, CFU, SSD), l'ateneo di provenienza, il tipo del corso di provenienza (triennale, magistrale, ciclo unico) e le classi dei titoli già conseguiti, che servono solo a non riproporre un corso della stessa classe. |
 | **Fornitore / modello** | OpenAI Ireland Ltd. — testo estraibile `gpt-5.6-terra`; scansioni e foto `gpt-5.6-sol`. Sforzo `low` (override visione: `OPENAI_CFU_PARSE_MODEL`) |
 | **Dati trasmessi** | Il contenuto del file caricato. Il prompt istruisce il modello a ignorare matricola e codice fiscale e a non riprodurli. Nessun dato di contatto. |
 | **Classificazione** | Trasparenza (art. 50). Non Allegato III: vedi la valutazione in [Conformità all'AI Act](/conformita/ai-act). |
