@@ -9,7 +9,7 @@ Sul sito lo trovi in una sezione della **homepage**. Non è nel menu. Il percors
 
 Prima dei tre passi scegli se **completare un percorso già iniziato** o **iniziare un nuovo percorso**. Entrambe le scelte restano nel simulatore.
 
-Versione regole: `cfu-sim-v1`.
+Versione regole: `cfu-sim-v5`.
 
 ## Cosa fa
 
@@ -58,7 +58,7 @@ Score di un corso mostrato: `recognizedCfu / planCfu` (CFU riconosciuti sul tota
 
 L’**ordine** dei corsi proposti usa invece l’affinità di disciplina: i CFU convalidati sulle sole materie con un settore (senza insegnamenti a scelta e idoneità, che con pochi esami danno gli stessi CFU su quasi tutti i corsi) più una spinta ai corsi vicini alla provenienza (stessa area dei corsi della classe del documento; senza classe, esami con settori della stessa famiglia del piano). Con “completare” vince chi lascia meno CFU da fare, calcolati allo stesso modo. Sul collaudo il corso valutato dall’orientatore compare fra i primi tre nel 34% dei casi con “completare” e nel 41% con “nuovo”, contro il 10% e il 22% di prima. I CFU e lo score mostrati restano quelli veri.
 
-Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea (classe magistrale, ciclo unico concluso, oppure almeno 180 CFU; senza classe vale il tipo di corso stampato sul documento, come “Corso di Laurea Triennale”). Restano fuori i corsi della stessa classe di un titolo che il documento certifica come già conseguito: gli atenei non rilasciano un secondo titolo nella stessa classe, e un fascicolo con una LM-56 faceva proporre per prima un’altra LM-56 costruita sugli esami di quella laurea. La lettura del documento elenca le classi dei titoli conseguiti (anche più d’uno; non master, perfezionamenti, specializzazioni né carriere in corso o interrotte) e quelle del DM 509 si portano alle corrispondenti del DM 270 (31 → L-14, 22/S → LMG/01, 64/S → LM-56); una classe senza corrispondenza certa non esclude nulla. Con un corso scelto dall’utente non si esclude niente. Master e corsi brevi restano fuori. Il motore `cfu-sim-v1` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
+Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea (classe magistrale, ciclo unico concluso, oppure almeno 180 CFU; senza classe vale il tipo di corso stampato sul documento, come “Corso di Laurea Triennale”). Restano fuori i corsi della stessa classe di un titolo che il documento certifica come già conseguito: gli atenei non rilasciano un secondo titolo nella stessa classe, e un fascicolo con una LM-56 faceva proporre per prima un’altra LM-56 costruita sugli esami di quella laurea. La lettura del documento elenca le classi dei titoli conseguiti (anche più d’uno; non master, perfezionamenti, specializzazioni né carriere in corso o interrotte) e quelle del DM 509 si portano alle corrispondenti del DM 270 (31 → L-14, 22/S → LMG/01, 64/S → LM-56); una classe senza corrispondenza certa non esclude nulla. Con un corso scelto dall’utente non si esclude niente. Master e corsi brevi restano fuori. Il motore `cfu-sim-v5` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
 
 Due rami:
 
