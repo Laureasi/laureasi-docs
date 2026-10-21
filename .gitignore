@@ -5,3 +5,9 @@ node_modules/
 .env.screenshots
 playwright-report/
 test-results/
+.DS_Store
+
+# worktree e config personali degli strumenti
+.worktrees/
+.claude/settings.local.json
+.claude/worktrees/
