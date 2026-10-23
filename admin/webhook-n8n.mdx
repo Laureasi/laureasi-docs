@@ -63,6 +63,8 @@ Sulle schede percorso il form porta anche `entity_id` e `university_id`, così A
 
 Il payload include i dati del lead (nome, email, telefono, provincia, fonte, UTM, metadati) e, per il quiz, le informazioni collegate al risultato.
 
+Nome e cognome arrivano separati in `lead.first_name` e `lead.last_name`; `lead.full_name` resta la loro unione. Usa i campi separati per il contatto in CRM e torna a dividere `full_name` solo se mancano (lead creati prima della separazione). `quiz.contact.nome` resta il nome intero.
+
 Il lead porta anche i consensi: `privacy_accepted`, `consent_marketing`, `consent_health`, `consent_version` e `consent_at` (per il quiz anche in `quiz.contact`). Copia `consent_marketing` sul contatto Aurora: chi lo ha a `false` non va inserito in campagne promozionali.
 
 n8n inoltra il contatto anche ad **Aurora CRM**. Non copiare gli id del CMS nei campi `ateneo` e `corso` del contatto: sono cataloghi diversi. Per la provincia, n8n scrive sul contatto Aurora il campo `provincia` con la **sigla** (`FI`, `RM`), non l'id CMS.
@@ -76,7 +78,7 @@ n8n inoltra il contatto anche ad **Aurora CRM**. Non copiare gli id del CMS nei 
 | `lead.metadata.entity_type` | Stesso metadata | Se vale `universita`, non cercare un corso: usa solo l'ateneo |
 | `quiz.results[0].id` | Quiz Trova Laurea | Fallback di `entity_id` se il metadata non c'è |
 | `quiz.results[0].universityId` | Quiz Trova Laurea | Fallback di `university_id` |
-| `quiz.contact.provincia` | Quiz Trova Laurea | `{ id, nome, sigla }` della provincia CMS. n8n copia `sigla` su Aurora `provincia`. Assente/`null` sui lead non-quiz: il campo CRM non viene toccato |
+| `quiz.contact.provincia` | Quiz Trova Laurea | `{ id, nome, sigla }` della provincia CMS. n8n copia `sigla` su Aurora `provincia`. È facoltativa: `null` se l’utente non la indica e sui lead non-quiz, e allora il campo CRM non viene toccato |
 
 ### Mappa atenei CMS → Aurora
 
