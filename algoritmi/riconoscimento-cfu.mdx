@@ -9,7 +9,7 @@ Sul sito lo trovi in una sezione della **homepage**. Non è nel menu. Il percors
 
 Prima dei tre passi scegli se **completare un percorso già iniziato** o **iniziare un nuovo percorso**. Entrambe le scelte restano nel simulatore.
 
-Versione regole: `cfu-sim-v1`.
+Versione regole: `cfu-sim-v5`.
 
 ## Cosa fa
 
@@ -25,7 +25,7 @@ Ricevi un’email di sintesi con i corsi del report e il bottone **Apri la tua s
 
 1. **Documento** — carica il riconoscimento crediti oppure scarica il modello, compilalo e ricaricalo. L’upload è opzionale: puoi aprire la tabella vuota e inserire gli esami a mano.
 2. **Revisione** — tabella nome, SSD, CFU. Nome e CFU sono obbligatori, l’SSD no. Almeno una riga completa per continuare. Se il parse ha letto ateneo, classe MUR o corso, li vedi in chip **sola lettura** sopra la tabella.
-3. **Contatti** — nome, email, telefono, privacy. Poi parte il calcolo.
+3. **Contatti** — nome, cognome, email, telefono, privacy. Poi parte il calcolo.
 
 ## Documento
 
@@ -42,11 +42,13 @@ Il modello è un PDF Laureasi compilabile (Preview o Acrobat). In intestazione t
 
 Formati ammessi: PDF, JPG, PNG. Peso massimo **10 MB**. Un PDF può avere al massimo **40 pagine**: fino a 8 il modello le legge in una sola chiamata, oltre a blocchi di 8 in parallelo. Le pagine vengono ridotte a 2000 px sul lato lungo prima della lettura, come le foto JPG e PNG. Un file alla volta: un nuovo upload sostituisce il precedente. Formato, peso o pagine fuori limite restano un errore in pagina, senza invio.
 
+Il browser non manda il file all'admin: Vercel rifiuta i body delle function oltre 4,5 MB. Lo carica direttamente su Vercel Blob, nello store privato degli allegati dei lead, sotto `cfu-libretti/<uuid>/`. Il percorso lo decide l'admin (`POST /api/cfu-recognition/libretto-upload`), che rilascia un token valido 15 minuti per quel solo file, solo PDF, JPG o PNG fino a 10 MB. `/parse-libretto` e `/simulate` ricevono il percorso (`librettoBlob`) al posto del file. Al calcolo il documento diventa l'allegato del lead e la copia temporanea si cancella. Chi abbandona dopo la lettura lascia il file su Blob: il cron `/api/cron/cleanup-libretto-uploads` lo cancella ogni notte, dopo 24 ore. Se il caricamento su Blob non riesce, i file fino a 4 MB passano ancora nel body della richiesta; quelli più grandi mostrano un errore in pagina.
+
 Gli esami letti senza SSD non si scartano. Se il documento non stampa l'SSD per almeno metà degli esami, un secondo modello (`gpt-6.1-sol`) stima il settore dal nome dell'esame e dall'ateneo. Sui documenti che gli SSD li stampano la stima non parte: lì un esame senza settore di solito non ce l'ha davvero (idoneità di lingua, laboratori, abilità informatiche), e stimarlo spostava la simulazione lontano da quella degli orientatori. Il settore stimato compare nella tabella con l'etichetta **SSD stimato: ricontrollalo** (**poco sicuro** se la confidenza non è alta) e un avviso sopra la tabella; se l'utente cambia il settore, l'etichetta sparisce. I CFU non si stimano mai. Le voci con l'SSD ma senza CFU restano nell'elenco delle voci omesse; se però nessuna riga del documento è completa (certificati con solo nome, voto e data) vanno in tabella da completare. Gli esami simulati con l'SSD ancora stimato restano marcati sul lead e la pagina risultato lo ricorda. Allo stesso modo, se il documento non riporta i CFU per almeno metà degli esami (vecchio ordinamento, certificati con solo voto e data), lo stesso modello li stima dal nome; in tabella compaiono con l’etichetta **CFU stimati: ricontrollali**, e cambiarli toglie l’etichetta. Nel motore un esame con CFU stimati convalida per intero la materia a cui è abbinato, come fanno gli orientatori con gli esami senza crediti: una stima bassa altrimenti lascerebbe la materia da integrare. Sui 15 casi del benchmark senza CFU, prima tutti senza risultato, 10 risultano vicini agli orientatori.
 
 Si leggono solo gli esami superati. Nei documenti con colonne di data e voto, una riga senza data e senza voto (né esito come “Idoneo” o “Convalidato”) è un’attività del piano non ancora sostenuta e si omette, anche se l’intestazione dice “ha sostenuto e superato”: le autodichiarazioni Esse3 di Palermo elencano così tutto il piano, prova finale compresa. Su un lead reale si leggevano 24 esami e 180 CFU invece di 8 e 63; su un altro documento dello stesso formato 174 CFU invece di 27, con l’orientatore a 24.
 
-Se il parse non legge esami (o il servizio non risponde), vedi: «Non siamo riusciti a leggere il documento. Inserisci gli esami a mano.» La tabella resta vuota e puoi completarla tu. Il file resta in memoria e si allega al calcolo.
+Se il parse non legge esami (o il servizio non risponde), vedi: «Non siamo riusciti a leggere il documento. Inserisci gli esami a mano.» La tabella resta vuota e puoi completarla tu. Il file resta su Blob e si allega al calcolo.
 
 In CMS il documento finisce su **Libretto PDF**, visibile solo agli editor.
 
@@ -56,7 +58,7 @@ Score di un corso mostrato: `recognizedCfu / planCfu` (CFU riconosciuti sul tota
 
 L’**ordine** dei corsi proposti usa invece l’affinità di disciplina: i CFU convalidati sulle sole materie con un settore (senza insegnamenti a scelta e idoneità, che con pochi esami danno gli stessi CFU su quasi tutti i corsi) più una spinta ai corsi vicini alla provenienza (stessa area dei corsi della classe del documento; senza classe, esami con settori della stessa famiglia del piano). Con “completare” vince chi lascia meno CFU da fare, calcolati allo stesso modo. Sul collaudo il corso valutato dall’orientatore compare fra i primi tre nel 34% dei casi con “completare” e nel 41% con “nuovo”, contro il 10% e il 22% di prima. I CFU e lo score mostrati restano quelli veri.
 
-Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea (classe magistrale, ciclo unico concluso, oppure almeno 180 CFU; senza classe vale il tipo di corso stampato sul documento, come “Corso di Laurea Triennale”). Restano fuori i corsi della stessa classe di un titolo che il documento certifica come già conseguito: gli atenei non rilasciano un secondo titolo nella stessa classe, e un fascicolo con una LM-56 faceva proporre per prima un’altra LM-56 costruita sugli esami di quella laurea. La lettura del documento elenca le classi dei titoli conseguiti (anche più d’uno; non master, perfezionamenti, specializzazioni né carriere in corso o interrotte) e quelle del DM 509 si portano alle corrispondenti del DM 270 (31 → L-14, 22/S → LMG/01, 64/S → LM-56); una classe senza corrispondenza certa non esclude nulla. Con un corso scelto dall’utente non si esclude niente. Master e corsi brevi restano fuori. Il motore `cfu-sim-v1` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
+Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea (classe magistrale, ciclo unico concluso, oppure almeno 180 CFU; senza classe vale il tipo di corso stampato sul documento, come “Corso di Laurea Triennale”). Restano fuori i corsi della stessa classe di un titolo che il documento certifica come già conseguito: gli atenei non rilasciano un secondo titolo nella stessa classe, e un fascicolo con una LM-56 faceva proporre per prima un’altra LM-56 costruita sugli esami di quella laurea. La lettura del documento elenca le classi dei titoli conseguiti (anche più d’uno; non master, perfezionamenti, specializzazioni né carriere in corso o interrotte) e quelle del DM 509 si portano alle corrispondenti del DM 270 (31 → L-14, 22/S → LMG/01, 64/S → LM-56); una classe senza corrispondenza certa non esclude nulla. Con un corso scelto dall’utente non si esclude niente. Master e corsi brevi restano fuori. Il motore `cfu-sim-v5` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
 
 Due rami:
 
@@ -73,7 +75,7 @@ Se il pool è vuoto vedi uno stato vuoto: il contatto è comunque salvato.
 
 Vedi la colonna **Documento**: anno di iscrizione, CFU convalidabili, esami da sostenere, anni che restano.
 
-Sotto, il box **Un’altra ipotesi** ha solo **Richiedi una consulenza gratuita**. Il click apre un popup con nome, email e telefono del lead già salvato. **Invia la richiesta** crea un lead `prenota_consulenza`. Non c’è una stima dei CFU da lavoro in pagina.
+Sotto, il box **Un’altra ipotesi** ha solo **Richiedi una consulenza gratuita**. Il click apre un popup con nome, cognome, email e telefono del lead già salvato. **Invia la richiesta** crea un lead `prenota_consulenza`. Non c’è una stima dei CFU da lavoro in pagina.
 
 ## Destinazioni ammesse
 

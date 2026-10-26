@@ -54,7 +54,7 @@ flowchart LR
 | 7 | Agevolazioni | Passo 8 | 0 → +10 | Convenzioni ateneo compatibili; personalizzano anche il prezzo |
 | 8 | Ateneo Partner | CMS `is_partner` | 0 → +14 | **Leva principale** per prioritizzare atenei |
 | 9 | Priorità ateneo | ID università CMS | 0 → +18 | Pegaso +18, San Raffaele/Mercatorum +10 |
-| 10 | Sede in provincia | Passo anagrafica | +8 / 0 | Ateneo con almeno una sede nella provincia del lead |
+| 10 | Sede in provincia | Passo anagrafica | +8 / 0 | Ateneo con almeno una sede nella provincia del lead. La provincia è facoltativa: senza, nessun ateneo prende il boost |
 
 Per **crescita professionale** e **cambio carriera**, il ruolo si sceglie da una lista fissa (con campo **Altro** a testo libero). Il frontend invia un `matchText` arricchito; il ranking espande token con alias e sinonimi di dominio (`ROLE_TOKEN_ALIASES`, `ROLE_DOMAIN_SYNONYMS`) contro titolo, area e piano di studi.
 
@@ -74,7 +74,7 @@ Il quality gate **non svuota più i risultati** se nel pool esistono percorsi co
 
 ### Prezzo e agevolazioni
 
-Se l’utente seleziona una o più fasce (escl. “Nessuna di queste”), il prezzo nei risultati usa la **retta agevolata** del TaxBreak le cui **Categorie quiz** (`quizCategories`) intersecano le fasce dichiarate (label FE → chiavi canoniche). Ambito ammessi: `university`, `course_type`, `audience_category`, `specific_item` (non `other`). L’API espone `appliedBenefitLabel` e `standardFee`: in UI si mostra il prezzo agevolato, la retta standard barrata e una pill “Agevolazione · …”. Se nessun TaxBreak matcha, resta il prezzo catalogo (`reduced_fee` / standard). Dettagli operativi CMS in [Agevolazioni](/admin/agevolazioni#collegamento-al-quiz-di-orientamento).
+Se l’utente seleziona una o più fasce (escl. “Nessuna di queste”), il prezzo nei risultati usa la **retta agevolata** del TaxBreak le cui **Categorie quiz** (`quizCategories`) intersecano le fasce dichiarate (label FE → chiavi canoniche). Ambito ammessi: `university`, `course_type`, `audience_category`, `specific_item` (non `other`). L’API espone `appliedBenefitLabel` e `standardFee`: in UI si mostra il prezzo agevolato, la retta standard barrata e una pill “Agevolazione · …”. Se nessun TaxBreak matcha, resta il prezzo catalogo (`reduced_fee` / standard). Se sul percorso è attiva una **promozione** (campagna sconti che ha determinato `reduced_fee`) con prezzo uguale o più basso di quello agevolato, vince la promozione: il prezzo mostrato è quello della promo e l’API espone anche `appliedPromoLabel` (titolo della campagna), così la UI e l’email mostrano due pill, “Agevolazione · …” e “Promozione · …”. Un `reduced_fee` che viene da un’agevolazione generica non entra nel confronto, perché l’utente potrebbe non averne diritto. Dettagli operativi CMS in [Agevolazioni](/admin/agevolazioni#collegamento-al-quiz-di-orientamento).
 
 ## Come intervenire sui risultati
 
