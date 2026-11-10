@@ -9,7 +9,7 @@ Sul sito lo trovi in una sezione della **homepage**. Non è nel menu. Il percors
 
 Prima dei tre passi scegli se **completare un percorso già iniziato** o **iniziare un nuovo percorso**. Entrambe le scelte restano nel simulatore.
 
-Versione regole: `cfu-sim-v8`.
+Versione regole: `cfu-sim-v9`.
 
 ## Cosa fa
 
@@ -24,7 +24,7 @@ Ricevi un’email di sintesi con i corsi del report e il bottone **Apri la tua s
 ## Wizard
 
 1. **Documento** — carica il riconoscimento crediti oppure scarica il modello, compilalo e ricaricalo. L’upload è opzionale: puoi aprire la tabella vuota e inserire gli esami a mano.
-2. **Revisione** — tabella nome, SSD, CFU. Nome e CFU sono obbligatori, l’SSD no. Almeno una riga completa per continuare. Se il parse ha letto ateneo, classe MUR o corso, li vedi in chip **sola lettura** sopra la tabella.
+2. **Revisione** — tabella nome, SSD, CFU. Nome e CFU sono obbligatori, l’SSD no. Almeno una riga completa per continuare. Se il parse ha letto ateneo, classe MUR o corso, li vedi in chip **sola lettura** sopra la tabella. Sotto la tabella il riquadro facoltativo **Hai anche…** (vedi [Certificazioni ed esperienza lavorativa](#certificazioni-ed-esperienza-lavorativa)).
 3. **Contatti** — nome, cognome, email, telefono, privacy. Poi parte il calcolo.
 
 ## Documento
@@ -58,7 +58,7 @@ Score di un corso mostrato: `recognizedCfu / planCfu` (CFU riconosciuti sul tota
 
 L’**ordine** dei corsi proposti usa invece l’affinità di disciplina: i CFU convalidati sulle sole materie con un settore (senza insegnamenti a scelta e idoneità, che con pochi esami danno gli stessi CFU su quasi tutti i corsi) più una spinta ai corsi vicini alla provenienza (stessa area dei corsi della classe del documento; senza classe, esami con settori della stessa famiglia del piano). Con “completare” vince chi lascia meno CFU da fare, calcolati allo stesso modo. Sul collaudo il corso valutato dall’orientatore compare fra i primi tre nel 34% dei casi con “completare” e nel 41% con “nuovo”, contro il 10% e il 22% di prima. I CFU e lo score mostrati restano quelli veri.
 
-Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea (classe magistrale, ciclo unico concluso, oppure almeno 180 CFU letti, non stimati; senza classe vale il tipo di corso stampato sul documento, come “Corso di Laurea Triennale”). Basta sempre una laurea che il documento certifica come conseguita, anche del vecchio ordinamento: la lettura la segnala (`completedDegree`) e vale anche una classe di titolo conseguito. Senza, le lauree quadriennali, che non hanno classe né CFU, non arrivavano mai alla magistrale. Restano fuori i corsi della stessa classe di un titolo che il documento certifica come già conseguito: gli atenei non rilasciano un secondo titolo nella stessa classe, e un fascicolo con una LM-56 faceva proporre per prima un’altra LM-56 costruita sugli esami di quella laurea. La lettura del documento elenca le classi dei titoli conseguiti (anche più d’uno; non master, perfezionamenti, specializzazioni né carriere in corso o interrotte) e quelle del DM 509 si portano alle corrispondenti del DM 270 (31 → L-14, 22/S → LMG/01, 64/S → LM-56); una classe senza corrispondenza certa non esclude nulla. Con un corso scelto dall’utente non si esclude niente. Master e corsi brevi restano fuori. Il motore `cfu-sim-v8` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
+Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea (classe magistrale, ciclo unico concluso, oppure almeno 180 CFU letti, non stimati; senza classe vale il tipo di corso stampato sul documento, come “Corso di Laurea Triennale”). Basta sempre una laurea che il documento certifica come conseguita, anche del vecchio ordinamento: la lettura la segnala (`completedDegree`) e vale anche una classe di titolo conseguito. Senza, le lauree quadriennali, che non hanno classe né CFU, non arrivavano mai alla magistrale. Restano fuori i corsi della stessa classe di un titolo che il documento certifica come già conseguito: gli atenei non rilasciano un secondo titolo nella stessa classe, e un fascicolo con una LM-56 faceva proporre per prima un’altra LM-56 costruita sugli esami di quella laurea. La lettura del documento elenca le classi dei titoli conseguiti (anche più d’uno; non master, perfezionamenti, specializzazioni né carriere in corso o interrotte) e quelle del DM 509 si portano alle corrispondenti del DM 270 (31 → L-14, 22/S → LMG/01, 64/S → LM-56); una classe senza corrispondenza certa non esclude nulla. Con un corso scelto dall’utente non si esclude niente. Master e corsi brevi restano fuori. Il motore `cfu-sim-v9` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
 
 Due rami:
 
@@ -75,7 +75,9 @@ Se il pool è vuoto vedi uno stato vuoto: il contatto è comunque salvato.
 
 Vedi la colonna **Documento**: anno di iscrizione, CFU convalidabili, esami da sostenere, anni che restano.
 
-Sotto, il box **Un’altra ipotesi** ha solo **Richiedi una consulenza gratuita**. Il click apre un popup con nome, cognome, email e telefono del lead già salvato. **Invia la richiesta** crea un lead `prenota_consulenza`. Non c’è una stima dei CFU da lavoro in pagina.
+Se l’utente ha dichiarato un’esperienza di lavoro, sotto le metriche compare «Di cui N CFU per la tua esperienza di lavoro: l’orientatore li conferma con i documenti.» Le materie coperte da una certificazione dicono «Convalidabile con la tua certificazione …».
+
+Altrimenti, sotto, il box **Un’altra ipotesi** ha solo **Richiedi una consulenza gratuita**. Il click apre un popup con nome, cognome, email e telefono del lead già salvato. **Invia la richiesta** crea un lead `prenota_consulenza`.
 
 ## Destinazioni ammesse
 
@@ -87,26 +89,44 @@ Nel pool degli affini ci sono solo atenei **partner**. Sul sito non si sceglie u
 
 ## Regole di matching
 
-Regole `cfu-sim-v8`. Il motore parte dal **piano di destinazione**, non dal libretto.
+Regole `cfu-sim-v9`. Il motore parte dal **piano di destinazione**, non dal libretto.
 
 1. Normalizza l’SSD al codice MUR: ignora i suffissi di ateneo, scioglie i codici compatti (`SECSP08`, `SECS07`) e i prefissi scritti senza la lettera dell’area quando sono univoci (`LIN/12` → `L-LIN/12`, `PSI/01` → `M-PSI/01`); i compositi matchano su un pezzo. I codici della riforma 2024 (`GIUR-05/A`) diventano i settori storici: la tabella viene dalle coppie viste nei piani a catalogo e nelle prevalutazioni, e un gruppo che accorpa più settori li copre tutti (`GIUR-05/A` → `IUS/08` e `IUS/09`).
 2. Abbinamento in tre passate, ogni riga del libretto si usa **una sola volta**:
-   1. **Nome simile** (Dice sui token del nome, almeno 0,5) con SSD compatibile. Fra più candidati vince quello che copre i CFU della materia, poi il nome più simile. Le materie senza SSD (idoneità, laboratori, `NN`) si coprono solo così. **Inglese e informatica di base** fanno eccezione: un esame senza settore nel libretto (“LINGUA INGLESE”, “IDONEITA' LINGUA INGLESE”, “ABILITA' INFORMATICHE”) copre l’idoneità o le abilità del piano anche se lì il settore c’è (`L-LIN/12`, `INF/01`), e due nomi della stessa competenza valgono come simili. Non copre letteratura, cultura, linguistica, traduzione o filologia inglese, né un corso di informatica come “Fondamenti di informatica”.
+   1. **Nome simile** (Dice sui token del nome, almeno 0,5) con SSD compatibile. Fra più candidati vince quello che copre i CFU della materia, poi il nome più simile. Le materie senza SSD (idoneità, laboratori, `NN`) si coprono solo così. **Inglese e informatica di base** fanno eccezione: un esame senza settore nel libretto (“LINGUA INGLESE”, “IDONEITA' LINGUA INGLESE”, “ABILITA' INFORMATICHE”) copre l’idoneità o le abilità del piano anche se lì il settore c’è (`L-LIN/12`, `INF/01`), e due nomi della stessa competenza valgono come simili. Non copre letteratura, cultura, linguistica, traduzione o filologia inglese, né un corso di informatica come “Fondamenti di informatica”. Un’idoneità di lingua senza la lingua nel nome (“CONOSCENZE LINGUISTICHE”, “Idoneità linguistica”) vale come inglese, come fanno gli uffici; le “ulteriori conoscenze” restano escluse.
    2. **Stesso SSD**, con i CFU più vicini.
    3. **Insegnamenti a scelta** (“a scelta”, “libera”, “opzionale”): un esame avanzato con un SSD, di almeno 4 CFU, che copra i CFU della materia con la tolleranza di 3 **oppure ne abbia almeno i due terzi** (8 su 12, 6 su 9: Mercatorum copre gli a scelta da 12 con esami da 8). Se lo copre, la materia è convalidata **per intero**: un a scelta non resta mai “da integrare”. Vengono per ultimi, così non tolgono esami alle materie con SSD.
       - A scelta **libero**: un esame di qualsiasi settore.
       - A scelta **caratterizzante** o **affine**: solo un esame con un settore presente nel piano del corso. Riempiti con esami qualsiasi (una prova di informatica, storia contemporanea su un corso di lingue) davano 102 CFU dove l’ufficio ne dava 69.
       - Se il nome elenca le alternative (“- e-Learning e media education (SSD M-PED/04)”), vale il menu: un esame del settore di un’alternativa, o dal nome quasi identico (somiglianza almeno 0,8).
 3. CFU: convalida piena se i CFU di provenienza coprono la destinazione o lo scarto è **al massimo 3 CFU**. Oltre, **da integrare**.
-   Un esame con meno del **15%** dei CFU della materia non la copre, nemmeno in parte: un modulo da 1 CFU non integra un esame da 13, che resta da sostenere come nelle prevalutazioni. Gli esami con CFU stimati fanno eccezione.
+   Un esame con meno del **25%** dei CFU della materia non la copre, nemmeno in parte: un modulo da 1 CFU non integra un esame da 13, né un laboratorio da 2 una materia da 9, che restano da sostenere come nelle prevalutazioni (era il 15% fino a v8). Gli esami con CFU stimati fanno eccezione.
 4. Prova finale, tirocinio e “altre conoscenze” non si convalidano e non coprono nulla.
 5. Un esame trascritto due volte (“X – CONVALIDATO DA X”) conta una volta.
 6. **Magistrali**: se il documento è di una laurea triennale (`L-xx`, `L/SNT`, classi del DM 509, oppure, senza classe, un corso che il documento chiama triennale), i suoi esami sono il titolo d’accesso e non si convalidano. La pagina risultato lo spiega e suggerisce di caricare l’eventuale documento con esami in più, corsi singoli o un’altra carriera.
 
 L’SSD degli esami è facoltativo: un esame senza settore copre solo una materia senza SSD dal nome simile, l’idoneità di inglese o le abilità informatiche, mai un insegnamento a scelta.
 
+## Certificazioni ed esperienza lavorativa
+
+Nelle prevalutazioni gli uffici contano certificazioni ed esperienza di lavoro (53 CFU in 6 casi su 16), che il libretto quasi mai riporta. Lo step **Revisione** le chiede in un riquadro facoltativo:
+
+> Hai anche… (facoltativo)
+> ☐ Certificazione di inglese B2 o superiore
+> ☐ Certificazione EIPASS o ECDL
+> ☐ Esperienza di lavoro nel settore in cui vuoi laurearti → ○ meno di 2 anni ○ 2 anni o più
+
+Le risposte arrivano a `/simulate` in `extras` (`englishB2`, `computerCert`, `workYears`: `lt2` / `gte2`) e restano sul lead in `metadata.extras`.
+
+- **Certificazioni**: come l’“Esonero” delle prevalutazioni, ognuna convalida per intero **una sola** idoneità della stessa competenza (“Lingua inglese”, “Idoneità informatica”, “Abilità informatiche e telematiche”) fino a **6 CFU**. Una materia di lingua più grande, come “Lingua inglese 1” da 12 CFU di un corso di lingue, è di contenuto e la certificazione non la copre. Un piano senza quelle idoneità, come quasi tutte le magistrali, non ne ricava niente.
+- **Esperienza di lavoro**: l’ufficio la mette come “Abilità” su un esame del piano attinente al lavoro (6, 9 o 12 CFU). Non sapendo quale, il motore somma **6 CFU** sotto i due anni e **12** da due anni in su, entro il limite di legge (48 per triennali e cicli unici, 24 per le magistrali) e i CFU che restano nel piano. Ogni 6 CFU c’è un esame da sostenere in meno. I CFU da lavoro (`summary.workCfu`) sono già compresi nei CFU convalidabili e spostano l’anno di iscrizione, ma non decidono curriculum né classifica.
+
+L’esperienza letta nel documento (`documentWorkExperience`) resta separata e non si somma.
+
 <Note>
   Sulle letture del collaudo (101 casi con prevalutazione) le regole v2 portano lo scarto medio dagli orientatori da 13,9 a 10,8 CFU e la tendenza da +4,6 a +1,4. Sulle magistrali la tendenza scende da +19,6 a +4,5 e i casi entro 6 CFU passano dal 35% al 52%.
+
+  Le regole v9 aggiungono le risposte “Hai anche…” e due correzioni. Con le risposte ricavate dalle voci “Abilità” ed “Esonero” delle prevalutazioni, sui 45 casi del confronto di ottobre i risultati entro ±10% passano da 24 a 27 e lo scarto mediano dal 9,7% al 6,9%; sui 15 casi di verifica da 6 a 8 entro ±10%, nessuno oltre ±50%, anno giusto da 13 a 14. Senza risposte non peggiora nulla (25 su 45, 6 su 15). I CFU da lavoro peggiorano i casi in cui il motore sovrastima già.
 
   Le regole v8 vengono dal confronto del 28 ottobre 2026 fra simulazioni e prevalutazioni delle orientatrici (45 casi, lead di produzione). Su quei casi i risultati entro ±10% dall'ufficio passano da 19 a 25, oltre ±50% da 4 a 2, lo scarto mediano dal 12,5% all'8,7%. Su 15 casi di verifica mai usati per tarare le regole (riletti con il parser attuale) i totali restano gli stessi: 6 entro ±10%, 12 entro ±25%, scarto mediano da 13,5% a 11,5%, anno giusto da 14 a 13. Lì le regole cambiano 3 risultati, e il vincolo sugli affini lascia fuori un esame di ingegneria che Mercatorum convalida: va rivisto con i criteri degli uffici.
 
@@ -129,7 +149,6 @@ In **Dettagli corso** puoi sovrascrivere le soglie con i campi opzionali `cfu_so
 
 - Master e corsi brevi
 - Provincia, geografia, agevolazioni nel funnel
-- Abilità professionali, esoneri EIPASS / inglese B2
 - Distanza in km
 - Account utente o storico simulazioni
 
