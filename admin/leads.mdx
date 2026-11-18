@@ -36,7 +36,8 @@ La tabella mostra le informazioni principali di ogni lead:
 ## Aprire il dettaglio di un lead
 
 1. Clicca sulla riga del lead che ti interessa
-2. Si apre la scheda completa con messaggio, note interne, tracking e metadati
+2. Si apre la scheda completa. La tab **Lead** contiene contatti, messaggio, note interne, tracking e il riquadro **Dati del modulo** (vedi [Metadati nei Leads](/admin/leads-metadati))
+3. Sui lead del simulatore CFU c'è anche la tab **Esito prevalutazione** (vedi [sotto](#esito-prevalutazione))
 
 ## Aggiornare lo stato
 
@@ -85,13 +86,67 @@ Puoi esportare tutta la lista o solo le righe selezionate.
 
 ## Simulatore CFU
 
-I lead da `/simulatore-cfu` hanno `metadata.source_form` = `simulatore_cfu`. Nel JSON trovi il corso scelto (se c’è), gli esami, `origin` se letto dal documento, `result.ranking` (corso scelto e affini, oppure top 3 partner, con score %) o `error` se il calcolo è fallito dopo il salvataggio del contatto. Il campo **Provincia** resta vuoto.
+I lead da `/simulatore-cfu` hanno `metadata.source_form` = `simulatore_cfu`. Nel riquadro **Dati del modulo** leggi obiettivo, dichiarazioni, esami e corsi proposti senza aprire il JSON. Nel JSON trovi il corso scelto (se c’è), gli esami, `origin` se letto dal documento, `result.ranking` (corso scelto e affini, oppure top 3 partner, con score %) o `error` se il calcolo è fallito dopo il salvataggio del contatto. Il campo **Provincia** resta vuoto.
 
 Se la simulazione produce almeno un corso in elenco, il lead ha anche `result_hash`. Il link pubblico è `/simulatore-cfu/{hash}` (report, senza contatti).
 
 Se lo studente ha caricato un documento, in scheda vedi **Libretto PDF** (aprilo da lì). In metadati c’è anche `librettoFile` con `id` e `filename`. Il file non ha URL pubblico.
 
 Se ha allegato la prova lavoro dopo il report, in scheda vedi **Prova esperienza lavorativa** (`work_experience_file`). Il matching non si ricalcola.
+
+## Esito prevalutazione
+
+Sui lead del simulatore CFU la tab **Esito prevalutazione** registra cosa ha deciso l'ufficio e lo confronta con quello che il simulatore aveva detto allo studente. Serve a misurare l'affidabilità del simulatore e a capire dove correggerlo.
+
+<Frame caption="Tab Esito prevalutazione compilata (dati di prova)">
+  <img src="/images/admin/leads-esito-prevalutazione.png" alt="Tab Esito prevalutazione con CFU dell'ufficio, confronto con il simulatore, causa e commento" />
+</Frame>
+
+### Chi la compila e quando
+
+La compila l'orientatrice quando arriva la prevalutazione dell'ufficio. Serve il ruolo **admin**: con gli altri ruoli la tab si vede ma i campi non si modificano.
+
+### Cosa compilare
+
+| Campo | Cosa scrivere |
+| --- | --- |
+| CFU convalidati dall'ufficio | Il totale riconosciuto. È l'unico campo indispensabile |
+| Anno di iscrizione | L'anno a cui l'ufficio iscrive lo studente (1–6) |
+| PDF della prevalutazione | Facoltativo. Permette il confronto materia per materia |
+| Causa principale dello scarto | Una sola, la più importante (vedi tabella sotto) |
+| Commento | Cosa ha fatto l'ufficio di diverso. Es. *"Fisica da 12 convalidata con l'esame da 8 più integrazione da 6"* |
+
+Poi clicca **Save**.
+
+| Causa | Quando sceglierla |
+| --- | --- |
+| Nessuno scarto rilevante | Il simulatore ci ha preso, o quasi |
+| Documento letto male | Esami, CFU o settori diversi dal libretto |
+| Regola mancante o sbagliata nel simulatore | Documento letto bene, ragionamento sbagliato |
+| Errore o scelta discrezionale dell'ufficio | La differenza dipende dalla valutazione dell'ufficio |
+| Caso limite | AFAM, titolo estero, vecchio ordinamento, esami molto vecchi. **Escluso** dalle misure di affidabilità |
+| Dati dello studente incompleti | Libretto parziale, esami mancanti |
+| Corso valutato non proposto dal simulatore | L'ufficio ha valutato un corso che il simulatore non proponeva |
+| Altro | Spiegalo nel commento |
+
+### Confronto con il simulatore
+
+Il riquadro si compila da solo al salvataggio, dalla simulazione salvata sul lead. Non va modificato.
+
+| Campo | Significato |
+| --- | --- |
+| Corso confrontato | Il corso scelto dallo studente nel simulatore o, se non ne ha scelto uno, il primo proposto. Se l'ufficio ha valutato un corso diverso, scrivilo nel commento |
+| CFU del simulatore / Anno del simulatore | Quanto aveva stimato il simulatore su quel corso |
+| Scarto CFU | Simulatore meno ufficio: positivo = il simulatore ha promesso di più |
+| Fascia | Scarto in percentuale sui CFU dell'ufficio: Ottimo (identico), Buono (±10%), Discreto (±25%), Scarso (±50%), Pessimo (oltre). Se l'ufficio dà 0 CFU, Ottimo solo se anche il simulatore dà 0 |
+| Anno giusto | Sì/No. Vuoto se l'anno dell'ufficio non è indicato |
+| Versione regole | Versione del simulatore usata per lo studente (es. `cfu-sim-v10`) |
+
+Il confronto resta vuoto se mancano i CFU dell'ufficio, se sul lead non c'è una simulazione (per esempio dopo un errore del motore) o se il corso scelto non è tra i risultati.
+
+Il confronto misura quello che lo studente ha visto, con le regole di quel giorno. Per misurare le regole nuove sugli stessi casi il team tecnico usa il benchmark (`scripts/cfu-bench` in laureasi-admin), che rifà la simulazione con il motore attuale.
+
+**Compilato da** e **Compilato il** si aggiornano da soli quando cambia un campo inserito a mano.
 
 ## Guide correlate
 
