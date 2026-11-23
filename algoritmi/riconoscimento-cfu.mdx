@@ -9,7 +9,7 @@ Sul sito lo trovi in una sezione della **homepage**. Non è nel menu. Il percors
 
 Prima dei tre passi scegli se **completare un percorso già iniziato** o **iniziare un nuovo percorso**. Entrambe le scelte restano nel simulatore.
 
-Versione regole: `cfu-sim-v10`.
+Versione regole: `cfu-sim-v11`.
 
 ## Cosa fa
 
@@ -62,7 +62,7 @@ Score di un corso mostrato: `recognizedCfu / planCfu` (CFU riconosciuti sul tota
 
 L’**ordine** dei corsi proposti usa invece l’affinità di disciplina: i CFU convalidati sulle sole materie con un settore (senza insegnamenti a scelta e idoneità, che con pochi esami danno gli stessi CFU su quasi tutti i corsi) più una spinta ai corsi vicini alla provenienza (stessa area dei corsi della classe del documento; senza classe, esami con settori della stessa famiglia del piano). Con “completare” vince chi lascia meno CFU da fare, calcolati allo stesso modo. Sul collaudo il corso valutato dall’orientatore compare fra i primi tre nel 34% dei casi con “completare” e nel 41% con “nuovo”, contro il 10% e il 22% di prima. I CFU e lo score mostrati restano quelli veri.
 
-Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea (classe magistrale, ciclo unico concluso, oppure almeno 180 CFU letti, non stimati; senza classe vale il tipo di corso stampato sul documento, come “Corso di Laurea Triennale”). Basta sempre una laurea che il documento certifica come conseguita, anche del vecchio ordinamento: la lettura la segnala (`completedDegree`) e vale anche una classe di titolo conseguito. Senza, le lauree quadriennali, che non hanno classe né CFU, non arrivavano mai alla magistrale. Restano fuori i corsi della stessa classe di un titolo che il documento certifica come già conseguito: gli atenei non rilasciano un secondo titolo nella stessa classe, e un fascicolo con una LM-56 faceva proporre per prima un’altra LM-56 costruita sugli esami di quella laurea. La lettura del documento elenca le classi dei titoli conseguiti (anche più d’uno; non master, perfezionamenti, specializzazioni né carriere in corso o interrotte) e quelle del DM 509 si portano alle corrispondenti del DM 270 (31 → L-14, 22/S → LMG/01, 64/S → LM-56); una classe senza corrispondenza certa non esclude nulla. Con un corso scelto dall’utente non si esclude niente. Master e corsi brevi restano fuori. Il motore `cfu-sim-v10` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
+Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea (classe magistrale, ciclo unico concluso, oppure almeno 180 CFU letti, non stimati; senza classe vale il tipo di corso stampato sul documento, come “Corso di Laurea Triennale”). Basta sempre una laurea che il documento certifica come conseguita, anche del vecchio ordinamento: la lettura la segnala (`completedDegree`) e vale anche una classe di titolo conseguito. Senza, le lauree quadriennali, che non hanno classe né CFU, non arrivavano mai alla magistrale. Restano fuori i corsi della stessa classe di un titolo che il documento certifica come già conseguito: gli atenei non rilasciano un secondo titolo nella stessa classe, e un fascicolo con una LM-56 faceva proporre per prima un’altra LM-56 costruita sugli esami di quella laurea. La lettura del documento elenca le classi dei titoli conseguiti (anche più d’uno; non master, perfezionamenti, specializzazioni né carriere in corso o interrotte) e quelle del DM 509 si portano alle corrispondenti del DM 270 (31 → L-14, 22/S → LMG/01, 64/S → LM-56); una classe senza corrispondenza certa non esclude nulla. Con un corso scelto dall’utente non si esclude niente. Master e corsi brevi restano fuori. Il motore `cfu-sim-v11` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
 
 Due rami:
 
@@ -93,7 +93,7 @@ Nel pool degli affini ci sono solo atenei **partner**. Sul sito non si sceglie u
 
 ## Regole di matching
 
-Regole `cfu-sim-v10`. Il motore parte dal **piano di destinazione**, non dal libretto.
+Regole `cfu-sim-v11`. Il motore parte dal **piano di destinazione**, non dal libretto.
 
 1. Normalizza l’SSD al codice MUR: ignora i suffissi di ateneo, scioglie i codici compatti (`SECSP08`, `SECS07`) e i prefissi scritti senza la lettera dell’area quando sono univoci (`LIN/12` → `L-LIN/12`, `PSI/01` → `M-PSI/01`); i compositi matchano su un pezzo. I codici della riforma 2024 (`GIUR-05/A`) diventano i settori storici: la tabella viene dalle coppie viste nei piani a catalogo e nelle prevalutazioni, e un gruppo che accorpa più settori li copre tutti (`GIUR-05/A` → `IUS/08` e `IUS/09`).
 2. Abbinamento in passate successive, ogni riga del libretto si usa **una sola volta**:
