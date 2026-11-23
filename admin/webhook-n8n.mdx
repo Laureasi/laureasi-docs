@@ -27,6 +27,12 @@ Solo gli utenti con ruolo **Admin** possono modificare queste impostazioni.
 | **Timeout richiesta** | Tempo massimo per ogni tentativo (ms) |
 | **Tentativi aggiuntivi** | Retry in caso di errore |
 
+## Esito e nuovi tentativi
+
+L'esito dell'invio resta sul lead: **Stato webhook** (`pending`, `delivered`, `failed`, `disabled`), numero di tentativi, ultimo errore e data di consegna. Ogni 15 minuti il cron `/api/cron/retry-lead-webhooks` riprova i lead degli ultimi 2 giorni con meno di 8 tentativi, se sono `failed` o fermi in `pending` da oltre 15 minuti (fino a 20 per giro).
+
+Esito del webhook ed esito dell'email dei risultati (quiz, simulatore CFU) si salvano ciascuno sulle proprie colonne. Fino al 23 novembre 2026 si salvavano riscrivendo tutto il lead: l'email, che finisce pochi secondi dopo, riportava il lead a `pending` con 0 tentativi e il cron lo rimandava al CRM, creando doppioni in Aurora.
+
 ## Setup in n8n (panoramica)
 
 <Steps>
