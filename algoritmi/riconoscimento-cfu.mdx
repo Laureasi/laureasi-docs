@@ -9,7 +9,7 @@ Sul sito lo trovi in una sezione della **homepage**. Non è nel menu. Il percors
 
 Prima dei tre passi scegli se **completare un percorso già iniziato** o **iniziare un nuovo percorso**. Entrambe le scelte restano nel simulatore.
 
-Versione regole: `cfu-sim-v11`.
+Versione regole: `cfu-sim-v12`.
 
 ## Cosa fa
 
@@ -62,7 +62,7 @@ Score di un corso mostrato: `recognizedCfu / planCfu` (CFU riconosciuti sul tota
 
 L’**ordine** dei corsi proposti usa invece l’affinità di disciplina: i CFU convalidati sulle sole materie con un settore (senza insegnamenti a scelta e idoneità, che con pochi esami danno gli stessi CFU su quasi tutti i corsi) più una spinta ai corsi vicini alla provenienza (stessa area dei corsi della classe del documento; senza classe, esami con settori della stessa famiglia del piano). Con “completare” vince chi lascia meno CFU da fare, calcolati allo stesso modo. Sul collaudo il corso valutato dall’orientatore compare fra i primi tre nel 34% dei casi con “completare” e nel 41% con “nuovo”, contro il 10% e il 22% di prima. I CFU e lo score mostrati restano quelli veri.
 
-Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea (classe magistrale, ciclo unico concluso, oppure almeno 180 CFU letti, non stimati; senza classe vale il tipo di corso stampato sul documento, come “Corso di Laurea Triennale”). Basta sempre una laurea che il documento certifica come conseguita, anche del vecchio ordinamento: la lettura la segnala (`completedDegree`) e vale anche una classe di titolo conseguito. Senza, le lauree quadriennali, che non hanno classe né CFU, non arrivavano mai alla magistrale. Restano fuori i corsi della stessa classe di un titolo che il documento certifica come già conseguito: gli atenei non rilasciano un secondo titolo nella stessa classe, e un fascicolo con una LM-56 faceva proporre per prima un’altra LM-56 costruita sugli esami di quella laurea. La lettura del documento elenca le classi dei titoli conseguiti (anche più d’uno; non master, perfezionamenti, specializzazioni né carriere in corso o interrotte) e quelle del DM 509 si portano alle corrispondenti del DM 270 (31 → L-14, 22/S → LMG/01, 64/S → LM-56); una classe senza corrispondenza certa non esclude nulla. Con un corso scelto dall’utente non si esclude niente. Master e corsi brevi restano fuori. Il motore `cfu-sim-v11` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
+Pool partner del sito: **tutte** le lauree partner, senza tetto e senza filtro di ambito; le magistrali solo se dal documento risulta una laurea (classe magistrale, ciclo unico concluso, oppure almeno 180 CFU letti, non stimati; senza classe vale il tipo di corso stampato sul documento, come “Corso di Laurea Triennale”). Basta sempre una laurea che il documento certifica come conseguita, anche del vecchio ordinamento: la lettura la segnala (`completedDegree`) e vale anche una classe di titolo conseguito. Senza, le lauree quadriennali, che non hanno classe né CFU, non arrivavano mai alla magistrale. Restano fuori i corsi della stessa classe di un titolo che il documento certifica come già conseguito: gli atenei non rilasciano un secondo titolo nella stessa classe, e un fascicolo con una LM-56 faceva proporre per prima un’altra LM-56 costruita sugli esami di quella laurea. La lettura del documento elenca le classi dei titoli conseguiti (anche più d’uno; non master, perfezionamenti, specializzazioni né carriere in corso o interrotte) e quelle del DM 509 si portano alle corrispondenti del DM 270 (31 → L-14, 22/S → LMG/01, 64/S → LM-56); una classe senza corrispondenza certa non esclude nulla. Con un corso scelto dall’utente non si esclude niente. Master e corsi brevi restano fuori. Il motore `cfu-sim-v12` valuta i curricula; restano i **3** percorsi con copertura più alta (`recognizedCfu / planCfu`). Se il client manda ancora `degreeType` o `macroAreaId`, il pool si restringe e torna al tetto di **40**.
 
 Due rami:
 
@@ -93,7 +93,7 @@ Nel pool degli affini ci sono solo atenei **partner**. Sul sito non si sceglie u
 
 ## Regole di matching
 
-Regole `cfu-sim-v11`. Il motore parte dal **piano di destinazione**, non dal libretto.
+Regole `cfu-sim-v12`. Il motore parte dal **piano di destinazione**, non dal libretto.
 
 1. Normalizza l’SSD al codice MUR: ignora i suffissi di ateneo, scioglie i codici compatti (`SECSP08`, `SECS07`) e i prefissi scritti senza la lettera dell’area quando sono univoci (`LIN/12` → `L-LIN/12`, `PSI/01` → `M-PSI/01`); i compositi matchano su un pezzo. I codici della riforma 2024 (`GIUR-05/A`) diventano i settori storici: la tabella viene dalle coppie viste nei piani a catalogo e nelle prevalutazioni, e un gruppo che accorpa più settori li copre tutti (`GIUR-05/A` → `IUS/08` e `IUS/09`).
 2. Abbinamento in passate successive, ogni riga del libretto si usa **una sola volta**:
@@ -111,6 +111,8 @@ Regole `cfu-sim-v11`. Il motore parte dal **piano di destinazione**, non dal lib
 4. Prova finale e “altre conoscenze” non si convalidano e non coprono nulla. Il **tirocinio** si convalida con un tirocinio della carriera precedente, ma solo nella **stessa classe** di laurea. Gli uffici chiedono anche il report, che il simulatore non vede.
 5. Un esame trascritto due volte (“X – CONVALIDATO DA X”) conta una volta.
 6. **Magistrali**: se il documento è di una laurea triennale (`L-xx`, `L/SNT`, classi del DM 509, oppure, senza classe, un corso che il documento chiama triennale), i suoi esami sono il titolo d’accesso e non si convalidano. La pagina risultato lo spiega e suggerisce di caricare l’eventuale documento con esami in più, corsi singoli o un’altra carriera.
+
+**Settore dal catalogo** (v12): prima del motore, un esame letto senza settore prende quello della materia con lo stesso nome nei piani a catalogo, se in tutti i piani è lo stesso. “Diritto commerciale” diventa `IUS/04` e copre “Diritto dell’impresa”, come nella prevalutazione di Gorea. Restano senza le idoneità di lingua e informatica, le voci di carriera, i codici AFAM e i nomi che nei piani hanno settori diversi. Il settore serve solo al calcolo: sul lead restano gli esami confermati dall’utente.
 
 L’SSD degli esami è facoltativo: un esame senza settore copre una materia senza SSD dal nome simile, una materia con SSD dal nome quasi identico, l’idoneità di inglese o le abilità informatiche, mai un insegnamento a scelta.
 
@@ -135,6 +137,8 @@ Le risposte arrivano a `/simulate` in `extras` (`englishB2`, `computerCert`, `wo
 L’esperienza letta nel documento (`documentWorkExperience`) resta separata e non si somma.
 
 <Note>
+  La correzione v12 (27 novembre 2026) viene dai commenti delle orientatrici sulle prove del 24-25 novembre: Gorea passa da 39 a 48 CFU (ufficio 51), nessun caso del banco peggiora e i casi tenuti da parte entro ±10% passano da 4 a 5. Provata e scartata la scelta della materia più grande coperta in tolleranza: Gorea guadagnava 3 CFU, ma 7 casi peggioravano.
+
   Le correzioni v11 (novembre 2026) vengono dalle 36 prove in produzione del 23 novembre e dal banco di regressione sui casi con prevalutazione. Sui 26 casi di sviluppo, con gli SSD stimati come nel flusso reale, i risultati entro ±10% dall’ufficio passano da 10 a 13 e l’anno giusto da 20 a 22 (Renna da 20 a 86 CFU con l’ufficio a 82, Aiello da 12 a 39 con l’ufficio a 54); sui 45 casi di ottobre e sui 10 tenuti da parte nessun peggioramento (25 e 4 entro ±10%). Rifatte dal sito il 24 novembre, le 36 prove passano da 13 a 19 entro ±10%, da 21 a 29 entro ±25% e da 26 a 33 con l’anno giusto; ora gli errori per eccesso (15) superano quelli per difetto (14). Restano fuori l’esonero per l’esperienza di lavoro e un ordine diverso per “completare”: nessun caso di sviluppo li sostiene.
 
   Le regole v10 vengono dalle risposte delle orientatrici alle domande sui criteri (novembre 2026): tolleranza per ateneo anche sugli a scelta, integrazioni da almeno 6 CFU, somma degli esami dello stesso SSD, idoneità ed esame di inglese, limiti delle certificazioni, tirocinio nella stessa classe. Gli uffici hanno anche confermato che per Perruccio la loro prevalutazione era sbagliata (Storia della filosofia moderna è convalidabile): nel benchmark il dato dell’ufficio passa da 52 a 64 CFU. Confrontate riga per riga con i PDF degli uffici, le righe in disaccordo sui 45 casi scendono da 49 a 46. Sui totali il risultato è neutro: sui 45 casi, entro ±10% da 25 a 23 senza risposte e da 27 a 25 con le risposte, oltre ±50% da 2 a 1. Sui 15 casi di verifica entro ±10% da 5 a 6 senza risposte e da 7 a 8 con le risposte, entro ±25% da 12 a 11. Le somme per settore sono quelle che fa l’ufficio (Morgante: Biochimica 5 + 5), ma alzano i totali dei casi in cui il motore sovrastima già.
